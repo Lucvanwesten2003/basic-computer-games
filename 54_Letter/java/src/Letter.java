@@ -8,7 +8,8 @@ import java.util.Scanner;
  * Based on the Basic game of Letter here
  * https://github.com/coding-horror/basic-computer-games/blob/main/54%20Letter/letter.bas
  * <p>
- * Note:  The idea was to create a version of the 1970's Basic game in Java, without introducing
+ * Note: The idea was to create a version of the 1970's Basic game in Java,
+ * without introducing
  * new features - no additional text, error checking, etc has been added.
  */
 public class Letter {
@@ -17,19 +18,10 @@ public class Letter {
     public static final int ASCII_A = 65;
     public static final int ALL_LETTERS = 26;
 
-    private enum GAME_STATE {
-        STARTUP,
-        INIT,
-        GUESSING,
-        RESULTS,
-        GAME_OVER
-    }
-
     // Used for keyboard input
     private final Scanner kbScanner;
 
-    // Current game state
-    private GAME_STATE gameState;
+    // Current game statea
 
     // Players guess count;
     private int playerGuesses;
@@ -38,72 +30,53 @@ public class Letter {
     private int computersLetter;
 
     public Letter() {
-
-        gameState = GAME_STATE.STARTUP;
-
         // Initialise kb scanner
         kbScanner = new Scanner(System.in);
     }
 
-    /**
-     * Main game loop
-     */
-    public void play() {
+    public void startUp() {
+        intro();
+        this.init();
+    }
 
-        do {
-            switch (gameState) {
+    public void init() {
+        playerGuesses = 0;
+        computersLetter = ASCII_A + (int) (Math.random() * ALL_LETTERS);
+        System.out.println("O.K., I HAVE A LETTER.  START GUESSING.");
+        this.guessing();
+    }
 
-                // Show an introduction the first time the game is played.
-                case STARTUP:
-                    intro();
-                    gameState = GAME_STATE.INIT;
-                    break;
+    public void guessing() {
 
-                case INIT:
-                    playerGuesses = 0;
-                    computersLetter = ASCII_A + (int) (Math.random() * ALL_LETTERS);
-                    System.out.println("O.K., I HAVE A LETTER.  START GUESSING.");
-                    gameState = GAME_STATE.GUESSING;
-                    break;
+        String playerGuess = displayTextAndGetInput("WHAT IS YOUR GUESS? ").toUpperCase();
+        
+        // Convert first character of input string to ascii
+        int toAscii = playerGuess.charAt(0);
+        playerGuesses++;
+        if (toAscii == computersLetter) {
+            this.results();
+        }
+        if (toAscii > computersLetter) {
+            System.out.println("TOO HIGH.  TRY A LOWER LETTER.");
+        } else {
+            System.out.println("TOO LOW.  TRY A HIGHER LETTER.");
+        }
+        this.guessing();
+    }
 
-                // Player guesses the number until they get it or run out of guesses
-                case GUESSING:
-                    String playerGuess = displayTextAndGetInput("WHAT IS YOUR GUESS? ").toUpperCase();
-
-                    // Convert first character of input string to ascii
-                    int toAscii = playerGuess.charAt(0);
-                    playerGuesses++;
-                    if (toAscii == computersLetter) {
-                        gameState = GAME_STATE.RESULTS;
-                        break;
-                    }
-
-                    if (toAscii > computersLetter) {
-                        System.out.println("TOO HIGH.  TRY A LOWER LETTER.");
-                    } else {
-                        System.out.println("TOO LOW.  TRY A HIGHER LETTER.");
-                    }
-                    break;
-
-                // Play again, or exit game?
-                case RESULTS:
-                    System.out.println();
-                    System.out.println("YOU GOT IT IN " + playerGuesses + " GUESSES!!");
-                    if (playerGuesses <= OPTIMAL_GUESSES) {
-                        System.out.println("GOOD JOB !!!!!");
-                        // Original game beeped 15 tims if you guessed in the optimal guesses or less
-                        // Changed this to do a single beep only
-                        Toolkit.getDefaultToolkit().beep();
-                    } else {
-                        // Took more than optimal number of guesses
-                        System.out.println("BUT IT SHOULDN'T TAKE MORE THAN " + OPTIMAL_GUESSES + " GUESSES!");
-                    }
-                    System.out.println();
-                    System.out.println("LET'S PLAN AGAIN.....");
-                    gameState = GAME_STATE.INIT;
-                    break;
-            }
-        } while (gameState != GAME_STATE.GAME_OVER);
+    public void results() {
+        System.out.println();
+        System.out.println("YOU GOT IT IN " + playerGuesses + " GUESSES!!");
+        if (playerGuesses <= OPTIMAL_GUESSES) {
+            System.out.println("GOOD JOB !!!!!");
+            Toolkit.getDefaultToolkit().beep();
+        } else {
+            // Took more than optimal number of guesses
+            System.out.println("BUT IT SHOULDN'T TAKE MORE THAN " + OPTIMAL_GUESSES + " GUESSES!");
+        }
+        System.out.println();
+        System.out.println("LET'S PLAN AGAIN.....");
+        this.init();
     }
 
     public void intro() {
@@ -133,6 +106,7 @@ public class Letter {
      * Print a message on the screen, then accept input from Keyboard.
      *
      * @param text message to be displayed on screen.
+     * 
      * @return what was typed by the player.
      */
     private String displayTextAndGetInput(String text) {
